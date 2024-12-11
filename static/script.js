@@ -110,20 +110,32 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsContainer.innerHTML = '<h3>RIASEC</h3>';
 
         if (data.RIASEC && data.RIASEC.length > 0) {
+            const translations = {
+                "Realistic": "Реалистичный",
+                "Investigative": "Исследовательский",
+                "Artistic": "Артистический",
+                "Social": "Социальный",
+                "Enterprising": "Предприимчивый",
+                "Conventional": "Конвенциональный"
+            };
+
             data.RIASEC.forEach(r => {
+                const translatedCategory = translations[r.category] || r.category;
                 const p = document.createElement('p');
-                p.textContent = `${r.category}: ${r.score}`;
+                p.textContent = `${translatedCategory}: ${r.score}`;
                 resultsContainer.appendChild(p);
             });
         } else {
             resultsContainer.innerHTML += '<p>Результаты RIASEC не найдены.</p>';
         }
 
+        // Отображение MBTI
         resultsContainer.innerHTML += '<h3>MBTI</h3>';
-
-        if (data.MBTI && data.MBTI.type) {
-            resultsContainer.innerHTML += `<p>Тип личности MBTI: <b>${data.MBTI.type}</b></p>`;
-            resultsContainer.innerHTML += `<p>${data.MBTI.description}</p>`;
+        if (data.MBTI) {
+            const mbtiType = data.MBTI?.type || 'Unknown';
+            const mbtiDescription = data.MBTI?.description || 'Нет описания.';
+            resultsContainer.innerHTML += `<p>Тип личности MBTI: <b>${mbtiType}</b></p>`;
+            resultsContainer.innerHTML += `<p>${mbtiDescription}</p>`;
         } else {
             resultsContainer.innerHTML += '<p>Результаты MBTI не найдены.</p>';
         }
@@ -138,8 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayGraph(data) {
         const ctx = document.getElementById('mbtiChart').getContext('2d');
 
-        const x = data.MBTI?.["Sensing/Intuition"] === "S" ? -1 : 1; // Сенсорика: -1, Интуиция: 1
-        const y = data.MBTI?.["Extroversion/Introversion"] === "E" ? 1 : -1; // Экстраверсия: 1, Интроверсия: -1
+        const x = data.MBTI?.axes?.x || 0; // Сенсорика: -1, Интуиция: 1
+        const y = data.MBTI?.axes?.y || 0; // Экстраверсия: 1, Интроверсия: -1
 
         new Chart(ctx, {
             type: 'scatter',

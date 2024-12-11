@@ -55,11 +55,6 @@ def process_test():
         print("Результаты RIASEC:", r_categories)
         print("Результаты MBTI:", mbti_categories)
 
-        # Установить значения по умолчанию для категорий MBTI, если они равны 0
-        for key in mbti_categories.keys():
-            if mbti_categories[key] == 0:
-                mbti_categories[key] = 1
-
         # Формирование типа MBTI
         mbti_results = {
             "Extroversion/Introversion": "E" if mbti_categories["Extroversion"] > mbti_categories["Introversion"] else "I",
@@ -112,7 +107,7 @@ def analyze_results(r_results, mbti_type):
     """Генерация анализа на основе RIASEC и MBTI"""
     r_analysis = {
         "Realistic": "Вы предпочитаете практическую работу, связанную с техникой или реальными задачами.",
-        "Investigative": "Вы thrive в аналитических и исследовательских ролях, таких как наука, IT или аналитика.",
+        "Investigative": "Вы отлично справляетесь с аналитическими и исследовательскими ролями, такими как наука, IT или аналитика.",
         "Artistic": "Творческие профессии — ваша сильная сторона. Рассмотрите карьеру в искусстве, дизайне или музыке.",
         "Social": "Вы хорошо справляетесь с помощью другим людям. Подходящие профессии: учитель, консультант.",
         "Enterprising": "Лидерство и бизнес-активности подходят вам. Попробуйте себя в управлении или предпринимательстве.",
