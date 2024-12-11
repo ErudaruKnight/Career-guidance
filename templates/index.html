@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест на профориентацию</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <script src="/static/script.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Тест на профориентацию</h1>
+        <p>Узнайте свои профессиональные предпочтения и тип личности.</p>
+    </header>
+
+    <main>
+        <!-- Секция описания -->
+        <section id="description-section">
+            <h2>О тесте</h2>
+            <p>Этот тест сочетает методики RIASEC и MBTI, чтобы помочь вам понять свои профессиональные предпочтения и тип личности.</p>
+            <h3>Методика RIASEC</h3>
+            <p>Методика RIASEC делит людей на шесть категорий личности, связанных с профессиональными интересами:</p>
+            <ul>
+                <li><b>Реалистический:</b> Практическая и ручная работа, например, инженерия или механика.</li>
+                <li><b>Исследовательский:</b> Аналитические и исследовательские роли, такие как наука, IT или аналитика.</li>
+                <li><b>Артистический:</b> Творческие профессии, такие как искусство, писательство или музыка.</li>
+                <li><b>Социальный:</b> Помощь и взаимодействие с людьми, например, преподавание или консультирование.</li>
+                <li><b>Предпринимательский:</b> Лидерство и бизнес-активности, такие как управление или предпринимательство.</li>
+                <li><b>Конвенциональный:</b> Организованные и основанные на данных роли, такие как бухгалтерия или администрирование.</li>
+            </ul>
+        
+            <h3>Методика MBTI</h3>
+            <p>Методика MBTI выделяет 16 типов личности на основе четырёх ключевых характеристик:</p>
+            <ul>
+                <li><b>Экстраверсия (E) / Интроверсия (I):</b> Общительность против склонности к размышлениям.</li>
+                <li><b>Сенсорика (S) / Интуиция (N):</b> Ориентация на факты против абстрактных идей.</li>
+                <li><b>Мышление (T) / Чувства (F):</b> Принятие решений на основе логики против эмоций.</li>
+                <li><b>Суждение (J) / Восприятие (P):</b> Предпочтение порядка против гибкости.</li>
+            </ul>
+        </section>
+
+        <!-- Форма ввода данных -->
+        <section id="user-info-section">
+            <h2>Введите свои данные</h2>
+            <form id="userForm">
+                <label for="userName">Имя:</label>
+                <input type="text" id="userName" name="userName" required>
+                <br>
+                <label for="userEmail">Email:</label>
+                <input type="email" id="userEmail" name="userEmail" required>
+                <br>
+                <button type="submit">Продолжить</button>
+            </form>
+        </section>
+
+        <!-- Секция начала теста -->
+        <section id="start-section" style="display: none;">
+            <h2>Готовы начать?</h2>
+            <button id="startTestButton">Начать тест</button>
+        </section>
+
+        <!-- Секция вопросов -->
+        <section id="test-section" style="display: none;">
+            <h2>Вопросы</h2>
+            <p id="question-text"></p>
+            <div>
+                <button onclick="answerQuestion(1)">1</button>
+                <button onclick="answerQuestion(2)">2</button>
+                <button onclick="answerQuestion(3)">3</button>
+                <button onclick="answerQuestion(4)">4</button>
+                <button onclick="answerQuestion(5)">5</button>
+            </div>
+        </section>
+
+        <!-- Секция результатов -->
+        <section id="results-section" style="display: none;">
+            <h2>Результаты</h2>
+            <div id="results-container"></div>
+        </section>
+
+        <!-- Секция графика -->
+        <section id="graph-section" style="display: none;">
+            <h2>График личности</h2>
+            <canvas id="mbtiChart" width="800" height="800"></canvas>
+        </section>
+    </main>
+
+    <footer>
+        <p>Этот тест предназначен для помощи в выборе профессии. Он основан на методиках RIASEC и MBTI.</p>
+    </footer>
+</body>
+</html>
