@@ -54,14 +54,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Показать текущий вопрос
+    const answerDescriptions = {
+        1: "1 - Совсем не согласен",
+        2: "2 - Почти не согласен",
+        3: "3 - Не уверен",
+        4: "4 - Почти согласен",
+        5: "5 - Полностью согласен"
+    };
+    
     function showQuestion() {
         if (currentIndex < questions.length) {
             questionText.textContent = questions[currentIndex].text;
+    
+            // Обновить пояснение к выбору ответа
+            const answerDescription = document.getElementById('answer-description');
+            answerDescription.textContent = "Выберите ответ от 1 до 5: " + Object.values(answerDescriptions).join(", ");
         } else {
             finishTest();
         }
     }
-
+    
     // Сохранить ответ и перейти к следующему вопросу
     window.answerQuestion = (score) => {
         answers.push({ category: questions[currentIndex].category, score });
@@ -76,11 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log('Отправляемые данные:', { user: userData, answers });
 
-        fetch('/api/test', {
+        fetch('https://proforientator.com/api/test', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user: userData, answers })
         })
+        
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP ошибка! Статус: ${response.status}`);
@@ -107,52 +120,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Отображение результатов
     function displayResults(data) {
-        resultsContainer.innerHTML = '<h3>RIASEC</h3>';
-
-        if (data.RIASEC && data.RIASEC.length > 0) {
-            const translations = {
-                "Realistic": "Реалистичный",
-                "Investigative": "Исследовательский",
-                "Artistic": "Артистический",
-                "Social": "Социальный",
-                "Enterprising": "Предприимчивый",
-                "Conventional": "Конвенциональный"
-            };
-
-            data.RIASEC.forEach(r => {
-                const translatedCategory = translations[r.category] || r.category;
-                const p = document.createElement('p');
-                p.textContent = `${translatedCategory}: ${r.score}`;
-                resultsContainer.appendChild(p);
-            });
-        } else {
-            resultsContainer.innerHTML += '<p>Результаты RIASEC не найдены.</p>';
-        }
-
-        // Отображение MBTI
-        resultsContainer.innerHTML += '<h3>MBTI</h3>';
-        if (data.MBTI) {
-            const mbtiType = data.MBTI?.type || 'Unknown';
-            const mbtiDescription = data.MBTI?.description || 'Нет описания.';
-            resultsContainer.innerHTML += `<p>Тип личности MBTI: <b>${mbtiType}</b></p>`;
-            resultsContainer.innerHTML += `<p>${mbtiDescription}</p>`;
-        } else {
-            resultsContainer.innerHTML += '<p>Результаты MBTI не найдены.</p>';
-        }
-
-        resultsContainer.innerHTML += `
+        resultsContainer.innerHTML = `
+            <h3>RIASEC</h3>
+            ${data.RIASEC.map(r => `
+                <p><b>${r.category}:</b> ${r.score} — ${r.description}</p>
+            `).join('')}
+            
+            <h3>MBTI</h3>
+            <p><b>Тип личности MBTI:</b> ${data.MBTI.type || 'Не определён'}</p>
+            <p>${data.MBTI.description || 'Описание отсутствует.'}</p>
+            
             <h3>Анализ и рекомендации</h3>
-            <p>${data.Recommendations?.Combined || 'Нет рекомендаций.'}</p>
+            <p><b>RIASEC (наибольший результат):</b></p>
+            <ul>
+                ${getTopRIASEC(data.RIASEC).map(item => `<li>${item.category}: ${item.description}</li>`).join('')}
+            </ul>
+            <p><b>MBTI:</b> ${data.Recommendations.MBTI_Analysis}</p>
+            <p><b>Рекомендуемые профессии:</b> ${data.Recommendations.MBTI_Professions.join(', ') || 'Нет рекомендаций.'}</p>
         `;
     }
+    
+    // Функция для получения категорий с наибольшим результатом
+    function getTopRIASEC(riaSecData) {
+        const maxScore = Math.max(...riaSecData.map(r => r.score)); // Находим максимальный балл
+        return riaSecData.filter(r => r.score === maxScore); // Возвращаем категории с максимальным баллом
+    }
+    
 
     // Построение графика
     function displayGraph(data) {
         const ctx = document.getElementById('mbtiChart').getContext('2d');
-
+    
         const x = data.MBTI?.axes?.x || 0; // Сенсорика: -1, Интуиция: 1
         const y = data.MBTI?.axes?.y || 0; // Экстраверсия: 1, Интроверсия: -1
-
+    
         new Chart(ctx, {
             type: 'scatter',
             data: {
@@ -161,12 +162,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     data: [{ x: x, y: y }],
                     backgroundColor: 'rgba(75, 192, 192, 0.6)',
                     borderColor: 'rgba(75, 192, 192, 1)',
-                    pointRadius: 20
+                    pointRadius: 10
                 }]
             },
             options: {
                 plugins: {
                     legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                return `MBTI: ${data.MBTI?.type || 'Unknown'} (${x.toFixed(2)}, ${y.toFixed(2)})`;
+                            }
+                        }
+                    },
                     annotation: {
                         annotations: {
                             midlineX: {
@@ -175,8 +183,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                 xMax: 0,
                                 yMin: -2,
                                 yMax: 2,
-                                borderColor: 'rgba(0, 0, 0, 0.8)',
-                                borderWidth: 2
+                                borderColor: 'rgba(0, 0, 0, 0.6)',
+                                borderWidth: 2,
+                                label: {
+                                    display: true,
+                                    content: 'Центральная линия (X)',
+                                    position: 'start'
+                                }
                             },
                             midlineY: {
                                 type: 'line',
@@ -184,8 +197,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                 yMax: 0,
                                 xMin: -2,
                                 xMax: 2,
-                                borderColor: 'rgba(0, 0, 0, 0.8)',
-                                borderWidth: 2
+                                borderColor: 'rgba(0, 0, 0, 0.6)',
+                                borderWidth: 2,
+                                label: {
+                                    display: true,
+                                    content: 'Центральная линия (Y)',
+                                    position: 'start'
+                                }
                             }
                         }
                     }
@@ -209,6 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    
 
     // Проверка email
     function validateEmail(email) {

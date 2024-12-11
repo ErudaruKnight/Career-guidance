@@ -30,7 +30,7 @@
                 <li><b>Предпринимательский:</b> Лидерство и бизнес-активности, такие как управление или предпринимательство.</li>
                 <li><b>Конвенциональный:</b> Организованные и основанные на данных роли, такие как бухгалтерия или администрирование.</li>
             </ul>
-        
+
             <h3>Методика MBTI</h3>
             <p>Методика MBTI выделяет 16 типов личности на основе четырёх ключевых характеристик:</p>
             <ul>
@@ -65,13 +65,14 @@
         <section id="test-section" style="display: none;">
             <h2>Вопросы</h2>
             <p id="question-text"></p>
-            <div>
-                <button onclick="answerQuestion(1)">1</button>
-                <button onclick="answerQuestion(2)">2</button>
-                <button onclick="answerQuestion(3)">3</button>
-                <button onclick="answerQuestion(4)">4</button>
-                <button onclick="answerQuestion(5)">5</button>
+            <div id="answer-buttons">
+                <button onclick="answerQuestion(1)">1 - Совсем не согласен</button>
+                <button onclick="answerQuestion(2)">2 - Почти не согласен</button>
+                <button onclick="answerQuestion(3)">3 - Не уверен</button>
+                <button onclick="answerQuestion(4)">4 - Почти согласен</button>
+                <button onclick="answerQuestion(5)">5 - Полностью согласен</button>
             </div>
+            
         </section>
 
         <!-- Секция результатов -->
@@ -86,6 +87,7 @@
             <canvas id="mbtiChart" width="800" height="800"></canvas>
         </section>
     </main>
+
 
     <footer>
         <p>Этот тест предназначен для помощи в выборе профессии. Он основан на методиках RIASEC и MBTI.</p>
