@@ -1,24 +1,3 @@
-const questions = [
-    { id: 1, text: "Мне нравится работать с инструментами или техникой.", category: "Realistic" },
-    { id: 2, text: "Мне интересно изучать научные теории или решать сложные задачи.", category: "Investigative" },
-    { id: 3, text: "Я люблю творить: писать, рисовать или заниматься музыкой.", category: "Artistic" },
-    { id: 4, text: "Мне нравится помогать другим людям и решать их проблемы.", category: "Social" },
-    { id: 5, text: "Я люблю управлять, планировать и добиваться целей.", category: "Enterprising" },
-    { id: 6, text: "Мне нравится работать с цифрами или данными.", category: "Conventional" },
-    { id: 7, text: "Я предпочитаю проводить время в больших компаниях.", category: "Extroversion" },
-    { id: 8, text: "Мне нравится размышлять в одиночестве.", category: "Introversion" },
-    { id: 9, text: "Я ориентируюсь на факты и детали.", category: "Sensing" },
-    { id: 10, text: "Я доверяю своей интуиции.", category: "Intuition" },
-    { id: 11, text: "Я принимаю решения на основе логики.", category: "Thinking" },
-    { id: 12, text: "Я принимаю решения на основе чувств.", category: "Feeling" },
-    { id: 13, text: "Мне нравится организованный подход.", category: "Judging" },
-    { id: 14, text: "Я предпочитаю гибкость и импровизацию.", category: "Perceiving" }
-];
-
-let currentIndex = 0; // Индекс текущего вопроса
-let answers = []; // Хранилище ответов
-let userData = {}; // Данные пользователя
-
 document.addEventListener('DOMContentLoaded', () => {
     const userInfoSection = document.getElementById('user-info-section');
     const startSection = document.getElementById('start-section');
@@ -29,6 +8,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsContainer = document.getElementById('results-container');
     const graphSection = document.getElementById('graph-section');
     const userForm = document.getElementById('userForm');
+
+    let currentIndex = 0;
+    let answers = [];
+    let userData = {};
+
+    const questions = [
+        { id: 1, text: "Мне нравится работать с инструментами или техникой.", category: "Realistic" },
+        { id: 2, text: "Мне интересно изучать научные теории или решать сложные задачи.", category: "Investigative" },
+        { id: 3, text: "Я люблю творить: писать, рисовать или заниматься музыкой.", category: "Artistic" },
+        { id: 4, text: "Мне нравится помогать другим людям и решать их проблемы.", category: "Social" },
+        { id: 5, text: "Я люблю управлять, планировать и добиваться целей.", category: "Enterprising" },
+        { id: 6, text: "Мне нравится работать с цифрами или данными.", category: "Conventional" },
+        { id: 7, text: "Я предпочитаю проводить время в больших компаниях.", category: "Extroversion" },
+        { id: 8, text: "Мне нравится размышлять в одиночестве.", category: "Introversion" },
+        { id: 9, text: "Я ориентируюсь на факты и детали.", category: "Sensing" },
+        { id: 10, text: "Я доверяю своей интуиции.", category: "Intuition" },
+        { id: 11, text: "Я принимаю решения на основе логики.", category: "Thinking" },
+        { id: 12, text: "Я принимаю решения на основе чувств.", category: "Feeling" },
+        { id: 13, text: "Мне нравится организованный подход.", category: "Judging" },
+        { id: 14, text: "Я предпочитаю гибкость и импровизацию.", category: "Perceiving" }
+    ];
+
+    const answerDescriptions = {
+        1: "1 - Совсем не согласен",
+        2: "2 - Почти не согласен",
+        3: "3 - Не уверен",
+        4: "4 - Почти согласен",
+        5: "5 - Полностью согласен"
+    };
 
     // Обработка формы пользователя
     userForm.addEventListener('submit', (e) => {
@@ -48,33 +56,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Запуск теста
     document.getElementById('startTestButton').addEventListener('click', () => {
         startSection.style.display = 'none';
-        descriptionSection.style.display = 'none'; // Скрыть описание
+        descriptionSection.style.display = 'none';
         testSection.style.display = 'block';
         showQuestion();
     });
 
-    // Показать текущий вопрос
-    const answerDescriptions = {
-        1: "1 - Совсем не согласен",
-        2: "2 - Почти не согласен",
-        3: "3 - Не уверен",
-        4: "4 - Почти согласен",
-        5: "5 - Полностью согласен"
-    };
-    
+    // Показ текущего вопроса
     function showQuestion() {
         if (currentIndex < questions.length) {
             questionText.textContent = questions[currentIndex].text;
-    
-            // Обновить пояснение к выбору ответа
             const answerDescription = document.getElementById('answer-description');
-            answerDescription.textContent = "Выберите ответ от 1 до 5: " + Object.values(answerDescriptions).join(", ");
+            answerDescription.textContent = "Выберите ответ: " + Object.values(answerDescriptions).join(", ");
         } else {
             finishTest();
         }
     }
-    
-    // Сохранить ответ и перейти к следующему вопросу
+
+    // Сохранение ответа
     window.answerQuestion = (score) => {
         answers.push({ category: questions[currentIndex].category, score });
         currentIndex++;
@@ -86,14 +84,11 @@ document.addEventListener('DOMContentLoaded', () => {
         testSection.style.display = 'none';
         resultsSection.style.display = 'block';
 
-        console.log('Отправляемые данные:', { user: userData, answers });
-
-        fetch('https://proforientator.com/api/test', {
+        fetch('/api/test', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user: userData, answers })
         })
-        
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP ошибка! Статус: ${response.status}`);
@@ -101,13 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return response.json();
             })
             .then(data => {
-                console.log('Полученные данные от сервера:', data);
-
-                if (!data || (!data.RIASEC && !data.MBTI)) {
-                    resultsContainer.innerHTML = '<p>Не удалось получить результаты. Пожалуйста, попробуйте снова.</p>';
-                    return;
-                }
-
                 displayResults(data);
                 graphSection.style.display = 'block';
                 displayGraph(data);
@@ -121,29 +109,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // Отображение результатов
     function displayResults(data) {
         resultsContainer.innerHTML = `
-            <h3>RIASEC</h3>
+            <h3>RIASEC Результаты</h3>
             ${data.RIASEC.map(r => `
-                <p><b>${r.category}:</b> ${r.score} — ${r.description}</p>
+                <p><b>${translateCategory(r.category)}:</b> ${r.score} — ${r.description}</p>
             `).join('')}
             
-            <h3>MBTI</h3>
+            <h3>MBTI Результаты</h3>
             <p><b>Тип личности MBTI:</b> ${data.MBTI.type || 'Не определён'}</p>
             <p>${data.MBTI.description || 'Описание отсутствует.'}</p>
             
-            <h3>Анализ и рекомендации</h3>
-            <p><b>RIASEC (наибольший результат):</b></p>
-            <ul>
-                ${getTopRIASEC(data.RIASEC).map(item => `<li>${item.category}: ${item.description}</li>`).join('')}
-            </ul>
-            <p><b>MBTI:</b> ${data.Recommendations.MBTI_Analysis}</p>
+            <h3>Рекомендации</h3>
+            <p>${data.Recommendations.MBTI_Analysis}</p>
             <p><b>Рекомендуемые профессии:</b> ${data.Recommendations.MBTI_Professions.join(', ') || 'Нет рекомендаций.'}</p>
         `;
     }
     
-    // Функция для получения категорий с наибольшим результатом
-    function getTopRIASEC(riaSecData) {
-        const maxScore = Math.max(...riaSecData.map(r => r.score)); // Находим максимальный балл
-        return riaSecData.filter(r => r.score === maxScore); // Возвращаем категории с максимальным баллом
+    // Функция для перевода категорий
+    function translateCategory(category) {
+        const translations = {
+            "Realistic": "Реалистичный",
+            "Investigative": "Исследовательский",
+            "Artistic": "Артистический",
+            "Social": "Социальный",
+            "Enterprising": "Предприимчивый",
+            "Conventional": "Конвенциональный"
+        };
+        return translations[category] || category;
     }
     
 
@@ -151,18 +142,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayGraph(data) {
         const ctx = document.getElementById('mbtiChart').getContext('2d');
     
-        const x = data.MBTI?.axes?.x || 0; // Сенсорика: -1, Интуиция: 1
-        const y = data.MBTI?.axes?.y || 0; // Экстраверсия: 1, Интроверсия: -1
+        // Получение координат x и y из данных
+        const x = data.MBTI?.axes?.x || 0; // Сенсорика (-1) / Интуиция (1)
+        const y = data.MBTI?.axes?.y || 0; // Экстраверсия (1) / Интроверсия (-1)
     
         new Chart(ctx, {
             type: 'scatter',
             data: {
                 datasets: [{
-                    label: 'Тип личности MBTI',
+                    label: 'Ваш MBTI профиль',
                     data: [{ x: x, y: y }],
-                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
                     borderColor: 'rgba(75, 192, 192, 1)',
-                    pointRadius: 10
+                    pointRadius: 8
                 }]
             },
             options: {
@@ -171,38 +163,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     tooltip: {
                         callbacks: {
                             label: (context) => {
-                                return `MBTI: ${data.MBTI?.type || 'Unknown'} (${x.toFixed(2)}, ${y.toFixed(2)})`;
+                                return `MBTI (${x.toFixed(2)}, ${y.toFixed(2)})`;
                             }
                         }
                     },
                     annotation: {
                         annotations: {
-                            midlineX: {
+                            lineX: {
                                 type: 'line',
                                 xMin: 0,
                                 xMax: 0,
                                 yMin: -2,
                                 yMax: 2,
                                 borderColor: 'rgba(0, 0, 0, 0.6)',
-                                borderWidth: 2,
+                                borderWidth: 1,
                                 label: {
                                     display: true,
-                                    content: 'Центральная линия (X)',
-                                    position: 'start'
+                                    position: 'end'
                                 }
                             },
-                            midlineY: {
+                            lineY: {
                                 type: 'line',
                                 yMin: 0,
                                 yMax: 0,
                                 xMin: -2,
                                 xMax: 2,
                                 borderColor: 'rgba(0, 0, 0, 0.6)',
-                                borderWidth: 2,
+                                borderWidth: 1,
                                 label: {
                                     display: true,
-                                    content: 'Центральная линия (Y)',
-                                    position: 'start'
+                                    position: 'end'
                                 }
                             }
                         }
@@ -212,14 +202,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     x: {
                         type: 'linear',
                         position: 'bottom',
-                        title: { display: true, text: 'Сенсорика (влево) — Интуиция (вправо)' },
+                        title: { display: true, text: 'Сенсорика (-) / Интуиция (+)' },
                         min: -2,
                         max: 2
                     },
                     y: {
                         type: 'linear',
                         position: 'left',
-                        title: { display: true, text: 'Интроверсия (вниз) — Экстраверсия (вверх)' },
+                        title: { display: true, text: 'Интроверсия (-) / Экстраверсия (+)' },
                         min: -2,
                         max: 2
                     }
@@ -229,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
 
-    // Проверка email
+    // Валидация email
     function validateEmail(email) {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(email);

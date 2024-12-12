@@ -89,23 +89,16 @@ EXCEL_FILE = os.path.join(os.getcwd(), "user_data.xlsx")
 if not os.path.exists(EXCEL_FILE):
     wb = openpyxl.Workbook()
     sheet = wb.active
-    sheet.append(["Имя", "Email", "Realistic", "Investigative", "Artistic", "Social", "Enterprising", "Conventional", "MBTI", "Профессии"])
+    sheet.append([
+        "Имя", "Почта", "Реалистичный", "Исследовательский",
+        "Артистический", "Социальный", "Предприимчивый",
+        "Конвенциональный", "MBTI", "Профессии"
+    ])
     wb.save(EXCEL_FILE)
 
 @app.route('/')
 def index():
     return render_template('index.html')
-
-@app.route('/results')
-def results():
-    return render_template('results.html', parameter_descriptions={
-        "Realistic": "Реалистичный: Практическая работа с инструментами и техникой.",
-        "Investigative": "Исследовательский: Аналитические задачи, работа с данными.",
-        "Artistic": "Артистический: Творческие виды деятельности, такие как искусство.",
-        "Social": "Социальный: Общение, помощь людям.",
-        "Enterprising": "Предприимчивый: Лидерство, управление, работа в бизнесе.",
-        "Conventional": "Конвенциональный: Организация, порядок, работа с цифрами."
-    })
 
 @app.route('/api/test', methods=['POST'])
 def process_test():
@@ -144,7 +137,7 @@ def process_test():
             mbti_results["Judging/Perceiving"]
         ])
 
-        # Расчёт координат для графика MBTI
+        # Координаты для графика
         x_axis = (mbti_categories["Intuition"] - mbti_categories["Sensing"]) / 10  # Нормализация
         y_axis = (mbti_categories["Extroversion"] - mbti_categories["Introversion"]) / 10
 
@@ -156,12 +149,46 @@ def process_test():
         sheet = wb.active
         sheet.append([
             user['name'], user['email'],
-            r_categories["Realistic"], r_categories["Investigative"], r_categories["Artistic"],
-            r_categories["Social"], r_categories["Enterprising"], r_categories["Conventional"],
-            mbti_type,
-            ", ".join(recommendations["MBTI_Professions"])
+            r_categories["Realistic"], r_categories["Investigative"],
+            r_categories["Artistic"], r_categories["Social"],
+            r_categories["Enterprising"], r_categories["Conventional"],
+            mbti_type, ", ".join(recommendations["MBTI_Professions"])
         ])
         wb.save(EXCEL_FILE)
+
+        # Отправка письма
+        try:
+            msg = Message(
+                subject="Результаты теста",
+                sender=app.config['MAIL_USERNAME'],
+                recipients=[user['email']],
+                body=f"""
+                Здравствуйте, {user['name']}!
+
+                Ваши результаты теста:
+                RIASEC:
+                Реалистичный: {r_categories['Realistic']}
+                Исследовательский: {r_categories['Investigative']}
+                Артистический: {r_categories['Artistic']}
+                Социальный: {r_categories['Social']}
+                Предприимчивый: {r_categories['Enterprising']}
+                Конвенциональный: {r_categories['Conventional']}
+
+                Реалистичный: — Предпочитают практическую работу, такую как инженерия или механика.
+                Исследовательский: — Ориентированы на исследование, аналитику и решение сложных задач.
+                Артистический: — Творческая личность, подходящая для искусства, дизайна или писательства.
+                Социальный: — Любят помогать другим и работать в социальной сфере.
+                Предприимчивый: — Обладают лидерскими качествами и подходите для управления и бизнеса.
+                Конвенциональный: — Предпочитают организованность и точность, такие как работа с данными.
+
+                MBTI тип личности: {mbti_type}
+                Рекомендации: {", ".join(recommendations['MBTI_Professions'])}
+                """
+            )
+            mail.send(msg)
+            print(f"Результаты отправлены на {user['email']}")
+        except Exception as e:
+            print(f"Ошибка при отправке письма: {e}")
 
         # Ответ API
         return jsonify({
@@ -184,26 +211,35 @@ def process_test():
 
 def analyze_results(r_categories, mbti_type):
     """Генерация анализа на основе RIASEC и MBTI"""
+    
+    # Описание категорий RIASEC
     r_analysis = {
-        "Realistic": "Вы предпочитаете практическую работу, такую как инженерия или механика.",
-        "Investigative": "Вы ориентированы на исследование, аналитику и решение сложных задач.",
-        "Artistic": "Вы творческая личность, подходящая для искусства, дизайна или писательства.",
-        "Social": "Вы любите помогать другим и работать в социальной сфере.",
-        "Enterprising": "Вы обладаете лидерскими качествами и подходите для управления и бизнеса.",
-        "Conventional": "Вы предпочитаете организованность и точность, такие как работа с данными."
+        "Realistic": "Реалистичный: Предпочитаете практическую работу, такую как инженерия или механика.",
+        "Investigative": "Исследовательский: Ориентированы на исследование, аналитику и решение сложных задач.",
+        "Artistic": "Артистический: Творческая личность, подходящая для искусства, дизайна или писательства.",
+        "Social": "Социальный: Любите помогать другим и работать в социальной сфере.",
+        "Enterprising": "Предприимчивый: Обладаете лидерскими качествами и подходите для управления и бизнеса.",
+        "Conventional": "Конвенциональный: Предпочитаете организованность и точность, такие как работа с данными."
     }
 
+    # Получение рекомендаций по MBTI
     mbti_professions = mbti_analysis.get(mbti_type, {}).get("professions", [])
     mbti_analysis_desc = mbti_analysis.get(mbti_type, {}).get("description", "Описание не найдено.")
 
-    r_analysis_combined = "\n".join([f"{category}: {r_analysis[category]}" for category in r_categories if r_categories[category] > 0])
+    # Создание анализа RIASEC
+    r_analysis_combined = "\n".join([
+        f"{category}: {r_analysis[category]}" 
+        for category in r_categories if r_categories[category] > 0
+    ])
 
+    # Возврат анализа и рекомендаций
     return {
-        "RIASEC_Descriptions": r_analysis,
-        "RIASEC_Analysis": r_analysis_combined,
-        "MBTI_Analysis": mbti_analysis_desc,
-        "MBTI_Professions": mbti_professions
+        "RIASEC_Descriptions": r_analysis,  # Все описания категорий RIASEC
+        "RIASEC_Analysis": r_analysis_combined,  # Комбинированный анализ для отправки пользователю
+        "MBTI_Analysis": mbti_analysis_desc,  # Описание MBTI типа
+        "MBTI_Professions": mbti_professions  # Рекомендации по профессиям
     }
+
 
 if __name__ == '__main__':
     app.run(debug=True)
